@@ -202,7 +202,7 @@ public class PathFinder {
     }
 
     closed.add(new Point(current.getX(), current.getY()));
-    System.out.println("CURRENT: " + current + "\n");
+    //System.out.println("CURRENT: " + current + "\n");
 
     //calculate costs for the 8 possible adjacent nodes to current
     for(int i = 0; i < 3; i++) {
@@ -248,12 +248,12 @@ public class PathFinder {
               neighbor.getY()));
 
         //if node in open and we found lower gCost, no need to search neighbor
-        if(inOpen && (fCost < neighbor.getF())) {
+        if(inOpen && (gCost < neighbor.getG())) {
           openRemove(neighbor);
         }
 
         //if neighbor in closed and found lower gCost, visit again
-        if(inClosed && (fCost < neighbor.getF())) {
+        if(inClosed && (gCost < neighbor.getG())) {
           closedRemove(new Point(neighbor.getX(), neighbor.getY()));
           open.add(neighbor);
         }
@@ -327,19 +327,24 @@ public class PathFinder {
         //find all adjacent x and y positions
         int xCoord = (parent.getX() - nodeSize) + (nodeSize * i);
         int yCoord = (parent.getY() - nodeSize) + (nodeSize * j);
+        Node openNode = new Node(xCoord, yCoord);
 
         //check if an adjacent node in open list
-        if(openContains(new Node(xCoord, yCoord))) {
-          Node openNode = openFind(new Node(xCoord, yCoord));
+        if(openContains(openNode)) {
+          Node found = openFind(openNode);
 
-          int gCost = parent.getG() + gCostMovement(parent, openNode);
+          int gCost = parent.getG() + gCostMovement(parent, found);
 
           //calculate gCost from this current node to an open list node is
           //less, then we should use this node for our final path
-          if(gCost < openNode.getG()) {
-            openNode.setG(gCost);
-            openNode.setF(gCost + openNode.getH());
-            openNode.setParent(parent);
+          if(gCost < found.getG()) {
+            open.remove(openNode);
+
+            found.setG(gCost);
+            found.setF(gCost + found.getH());
+            found.setParent(parent);
+
+            open.add(found);
           }
         }
       }
