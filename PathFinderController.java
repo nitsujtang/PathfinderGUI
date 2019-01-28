@@ -261,7 +261,7 @@ public class PathFinderController extends JPanel implements ActionListener,
     //check if is running, then do the pathfinding steps
     //if(isrunning)
     //  call one step of pathfinding
-    if(path.isRun() && !path.isPause()) {
+    if(path.isRun() && !path.isComplete()) {
       path.aStarPath();
       //path.printOpen();
     }
@@ -304,13 +304,15 @@ public class PathFinderController extends JPanel implements ActionListener,
       //set start and end node for path
 
       //on first run, set start and end; do again when finish algorithm
-      if(!path.isRun()) {
-        if(start != null && end != null) {
-          path.setStart(start);
-          path.setEnd(end);
-        }
+      if(!path.isComplete()) {
+        if(!path.isRun()) {
+          if(start != null && end != null) {
+            path.setStart(start);
+            path.setEnd(end);
+          }
 
-        path.setisRun(true);
+          path.setisRun(true);
+        }
       }
 
       //press space to pause the algorithm
@@ -320,6 +322,10 @@ public class PathFinderController extends JPanel implements ActionListener,
         path.setisPause(false);
       }
       
+    } else if(keyPress == 'c') {
+      //command to clear and reset
+      path.reset();
+      repaint();
     }
   }
 

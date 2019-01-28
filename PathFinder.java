@@ -33,6 +33,7 @@ public class PathFinder {
 
   private boolean isPause;
   private boolean run;
+  private boolean complete;
 
   private int diagonalMove;
   private int nodeSize;
@@ -122,6 +123,17 @@ public class PathFinder {
     return wall.remove(pt);
   }
 
+  public void reset() {
+    run = false;
+    isPause = true;
+    complete = false;
+
+    wall.clear();
+    closed.clear();
+    open.clear();
+    finalPath.clear();
+  }
+
   public void setStart(Node start) {
     this.start = new Node(start.getX(), start.getY());
     open.add(this.start);
@@ -142,8 +154,13 @@ public class PathFinder {
   public void setisRun(boolean run) {
     this.run = run;
   }
+  
   public boolean isRun() {
     return run;
+  }
+
+  public boolean isComplete() {
+    return complete;
   }
 
   /*
@@ -168,6 +185,7 @@ public class PathFinder {
       end.setParent(current.getParent());
       run = false;
       isPause = true;
+      complete = true;
       control.repaint();
       constructPath();
       //System.out.println(finalPath);
