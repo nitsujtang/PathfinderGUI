@@ -194,10 +194,10 @@ public class PathFinder {
       constructPath();
       //System.out.println(finalPath);
       System.out.println(start.getX() + " " + start.getY());
-      //System.out.println(open);
-      //System.out.println(closed);
-      System.out.println(open.size());
-      System.out.println(closed.size());
+      System.out.println(open);
+      System.out.println(closed);
+      //System.out.println(open.size());
+      //System.out.println(closed.size());
       return;
     }
 
@@ -272,7 +272,9 @@ public class PathFinder {
 
 
     //path correction for finding the shortest path
-    pathCorrection(open.peek());
+    if(!wall.isEmpty()) {
+      pathCorrection(open.peek());
+    }
   }
 
   /*
@@ -299,8 +301,8 @@ public class PathFinder {
   public int hCostMovement(Node neighbor) {
     int hXCost = Math.abs(end.getX() - neighbor.getX());
     int hYCost = Math.abs(end.getY() - neighbor.getY());
-    int hCost = nodeSize * Math.max(hXCost, hYCost) + (diagonalMove - nodeSize)
-                * Math.min(hXCost, hYCost);
+    int hCost = (nodeSize * Math.max(hXCost, hYCost)) + ((diagonalMove - nodeSize)
+                * Math.min(hXCost, hYCost));
     return (int) (hCost *= (1 + (1.0 / 1000)));
   }
 

@@ -89,7 +89,7 @@ public class Node {
 
   @Override
   public String toString() {
-    //return "F Cost: " + f + " G Cost: " + g + " H Cost: " + h + "\n";
-    return "X: " + x + " Y: " + y + "\n";
+    return "F Cost: " + f + " G Cost: " + g + " H Cost: " + h + "\n";
+    //return "X: " + x + " Y: " + y + "\n";
   }
 }
