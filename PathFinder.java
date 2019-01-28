@@ -10,15 +10,12 @@ import java.awt.Point;
 
 public class PathFinder {
   private ArrayList<Node> finalPath;
+
   //list of all walls on the grid
-  //TODO use a set of Location objects for walls
-  //private ArrayList<Node> wall;
   private Set<Point> wall;
 
   //data structures for A* pathfinding
   private PriorityQueue<Node> open;
-  //TODO use a set of Location objects for closed list
-  //private ArrayList<Node> closed;
   private Set<Point> closed;
 
   //data structures for DFS
@@ -38,10 +35,6 @@ public class PathFinder {
   private int diagonalMove;
   private int nodeSize;
   
-  public PathFinder() {
-    closed = new HashSet<Point>();
-  }
-
   public PathFinder(PathFinderController control) {
     this.control = control;
     nodeSize = 25;
@@ -52,8 +45,6 @@ public class PathFinder {
     diagonalMove = (int) (Math.sqrt(2 * (Math.pow(nodeSize, 2))));
 
     open = new PriorityQueue<Node>(new NodeComparator());
-    //closed = new ArrayList<Node>();
-    //wall = new ArrayList<Node>();
     closed = new HashSet<Point>();
     wall = new HashSet<Point>();
 
@@ -164,7 +155,12 @@ public class PathFinder {
   }
 
   /*
-   * A* pathfinding algorithm. TODO MANY BUGS??
+   * A* pathfinding algorithm. Tries to explore the fewest number of nodes to
+   * reach the end node. Self corrects the path to the end node using the
+   * heuristic cost function h.
+   *
+   * TODO should it explore more nodes in hopes of finding the shortest
+   * possible path?
    */
   public void aStarPath() {
     //get node with lowest F cost off PQ
@@ -245,13 +241,14 @@ public class PathFinder {
               neighbor.getY()));
 
         //if node in open and we found lower gCost, no need to search neighbor
-        if(inOpen && (gCost < neighbor.getG())) {
+        if(inOpen && (fCost < neighbor.getF())) {
           openRemove(neighbor);
         }
 
         //if neighbor in closed and found lower gCost, visit again
-        if(inClosed && (gCost < neighbor.getG())) {
-          //closedRemove(new Point(neighbor.getX(), neighbor.getY()));
+        if(inClosed && (fCost < neighbor.getF())) {
+          closedRemove(new Point(neighbor.getX(), neighbor.getY()));
+          open.add(neighbor);
         }
 
         //if neighbor not visited, then add to open list

@@ -10,6 +10,12 @@ public class NodeComparator implements Comparator<Node> {
       return -1;
     } else if(x.getF() > y.getF()) {
       return 1;
+    } else {
+      if(x.getG() < y.getG()) {
+        return -1;
+      } else if(x.getG() > y.getG()) {
+        return 1;
+      }
     }
 
     return 0;
