@@ -99,6 +99,16 @@ public class PathFinder {
     return open.remove(n);
   }
 
+  public Node openFind(Node n) {
+    for(Node x : open) {
+      if(x.equals(n)) {
+        return x;
+      }
+    }
+
+    return null;
+  }
+
   /*
    * Adds a wall to the wall list if a wall at the same location is not
    * already present.
@@ -159,8 +169,6 @@ public class PathFinder {
    * reach the end node. Self corrects the path to the end node using the
    * heuristic cost function h.
    *
-   * TODO should it explore more nodes in hopes of finding the shortest
-   * possible path?
    */
   public void aStarPath() {
     //get node with lowest F cost off PQ
@@ -226,8 +234,7 @@ public class PathFinder {
         //checks for border in adjacent pos, does not allow for a diagonal
         //jump across a border
         if(isWall(new Point(wallJumpX, current.getY())) || isWall(new
-              Point(current.getX(), wallJumpY)) && ((j == 0 || j == 2) && i !=
-              1)) {
+              Point(current.getX(), wallJumpY))) {
           continue;
         }
 
@@ -262,6 +269,10 @@ public class PathFinder {
         }
       }
     }
+
+
+    //path correction for finding the shortest path
+    pathCorrection(open.peek());
   }
 
   /*
@@ -291,6 +302,49 @@ public class PathFinder {
     int hCost = nodeSize * Math.max(hXCost, hYCost) + (diagonalMove - nodeSize)
                 * Math.min(hXCost, hYCost);
     return (int) (hCost *= (1 + (1.0 / 1000)));
+  }
+
+  /*
+   * Method checks nodes on the open list and allows for a possible path
+   * correction so that we achieve the lowest cost. A possible reason for
+   * why we may not achieve the lowest cost without this method is that we
+   * deal with wall objects and our first greedy attempt at finding a path
+   * may not work.
+   */
+  public void pathCorrection(Node parent) {
+    //if parent null, then no path
+    if(parent == null) {
+      return;
+    }
+
+    //all possible neighbors to the current node, the parent
+    for(int i = 0; i < 3; i++) {
+      for(int j = 0; j < 3; j++) {
+        if(i == 1 && j == 1) {
+          continue;
+        }
+
+        //find all adjacent x and y positions
+        int xCoord = (parent.getX() - nodeSize) + (nodeSize * i);
+        int yCoord = (parent.getY() - nodeSize) + (nodeSize * j);
+
+        //check if an adjacent node in open list
+        if(openContains(new Node(xCoord, yCoord))) {
+          Node openNode = openFind(new Node(xCoord, yCoord));
+
+          int gCost = parent.getG() + gCostMovement(parent, openNode);
+
+          //calculate gCost from this current node to an open list node is
+          //less, then we should use this node for our final path
+          if(gCost < openNode.getG()) {
+            openNode.setG(gCost);
+            openNode.setF(gCost + openNode.getH());
+            openNode.setParent(parent);
+          }
+        }
+      }
+    }
+
   }
 
   /*
