@@ -5,6 +5,8 @@
  * Name: Justin Tang
  */
 
+//TODO add feature to draw another path when completed and compare costs between
+//found path and drawn path?
 import java.util.*;
 import java.awt.Point;
 
@@ -32,7 +34,7 @@ public class PathFinder {
   private boolean run;
   private boolean complete;
 
-  private int diagonalMove;
+  private double diagonalMove;
   private int nodeSize;
   
   public PathFinder(PathFinderController control) {
@@ -185,29 +187,20 @@ public class PathFinder {
 
     //if min node is the end, then stop algorithm and build final path
     if(current.equals(end)) {
-      //stop algorithm
-      //print final path
       end.setParent(current.getParent());
       run = false;
       isPause = true;
       complete = true;
       control.repaint();
       constructPath();
-      //System.out.println(finalPath);
-      //System.out.println(start.getX() + " " + start.getY());
-      //System.out.println(open);
-      //System.out.println(closed);
-      //System.out.println(open.size());
-      //System.out.println(closed.size());
       System.out.println("Total Cost of Path: " + end.getParent().getG());
       System.out.println("Size of Open: " + open.size());
       System.out.println("Size of Closed: " + closed.size());
-      System.out.println("Size of Path: " + finalPath.size());
+      System.out.println("Size of Path: " + finalPath.size() + "\n");
       return;
     }
 
     closed.add(new Point(current.getX(), current.getY()));
-    //System.out.println("CURRENT: " + current + "\n");
 
     //calculate costs for the 8 possible adjacent nodes to current
     for(int i = 0; i < 3; i++) {
@@ -244,39 +237,46 @@ public class PathFinder {
         }
 
         //calculate f, g, and h costs for this node
-        int gCost = current.getG() + gCostMovement(current, neighbor);
-        int hCost = hCostMovement(neighbor);
-        int fCost = gCost + hCost;
+        double gCost = current.getG() + gCostMovement(current, neighbor);
+        double hCost = hCostMovement(neighbor);
+        double fCost = gCost + hCost;
 
         boolean inOpen = openContains(neighbor);
         boolean inClosed = closedContains(new Point(neighbor.getX(),
               neighbor.getY()));
+        Node found = openFind(neighbor);
+        if(found != null)
+          System.out.println("Found GCost: " + found.getG());
 
+        //if inOpen and inClosed cases just in case, should not happen
         //if node in open and we found lower gCost, no need to search neighbor
-        if(inOpen && (gCost < neighbor.getG())) {
+        if(inOpen && (found != null) && (gCost < found.getG())) {
           openRemove(neighbor);
-          Node found = openFind(neighbor);
+          //Node found = openFind(neighbor);
 
           neighbor.setG(gCost);
           neighbor.setF(gCost + found.getH());
 
-          //if(!(found.getParent()).equals(start)) {
-            neighbor.setParent(current);
-          //}
+          neighbor.setParent(current);
 
           open.add(neighbor);
+          System.out.println("HEYOPEN");
+          continue;
         }
 
         //if neighbor in closed and found lower gCost, visit again
+        //if(inClosed && (gCost < neighbor.getG())) {
         if(inClosed && (gCost < neighbor.getG())) {
-          closedRemove(new Point(neighbor.getX(), neighbor.getY()));
+          //closedRemove(new Point(neighbor.getX(), neighbor.getY()));
 
           /*neighbor.setG(gCost);
           neighbor.setH(hCost);
           neighbor.setF(gCost + hCost);
           neighbor.setParent(current);*/
 
-          open.add(neighbor);
+          //open.add(neighbor);
+          System.out.println("HEYCLOSED");
+          continue;
         }
 
         //if neighbor not visited, then add to open list
@@ -293,7 +293,7 @@ public class PathFinder {
 
     //path correction for finding the shortest path
     if(!wall.isEmpty()) {
-      pathCorrection(open.peek());
+      //pathCorrection(open.peek());
     }
   }
 
@@ -301,12 +301,17 @@ public class PathFinder {
    * Method finds the cost associated with moving from the current node to
    * the neighbor node. Uses the formula for the distance between two points.
    */
-  public int gCostMovement(Node parent, Node neighbor) {
+  public double gCostMovement(Node parent, Node neighbor) {
     //distance from point to point in a grid
     int xCoord = neighbor.getX() - parent.getX();
     int yCoord = neighbor.getY() - parent.getY();
 
     return (int) (Math.sqrt(Math.pow(xCoord, 2) + Math.pow(yCoord, 2)));
+    /*if(xCoord != 0 && yCoord != 0) {
+      return diagonalMove;
+    }
+
+    return 25.0;*/
   }
 
   /*
@@ -322,16 +327,19 @@ public class PathFinder {
    * With walls present, we use octile distance in order to find the shortest
    * possible path with path corrections.
    */
-  public int hCostMovement(Node neighbor) {
+  public double hCostMovement(Node neighbor) {
     int hXCost = Math.abs(end.getX() - neighbor.getX());
     int hYCost = Math.abs(end.getY() - neighbor.getY());
-    int hCost = (nodeSize * Math.max(hXCost, hYCost)) + ((diagonalMove - nodeSize)
+    double hCost = (nodeSize * Math.max(hXCost, hYCost)) + ((diagonalMove - nodeSize)
                 * Math.min(hXCost, hYCost));
 
-    if(wall.isEmpty()) {
-      return hCost;
+    if(hXCost > hYCost) {
+      hCost = ((hXCost - hYCost) + Math.sqrt(2) * hYCost);
+    } else {
+      hCost = ((hYCost - hXCost) + Math.sqrt(2) * hXCost);
     }
-    return (int) ((hXCost + hYCost) + (Math.sqrt(2) - 2) * Math.min(hXCost, hYCost));
+
+    return hCost;
   }
 
   /*
@@ -341,7 +349,7 @@ public class PathFinder {
    * deal with wall objects and our first greedy attempt at finding a path
    * may not work.
    */
-  public void pathCorrection(Node parent) {
+  /*public void pathCorrection(Node parent) {
     //if parent null, then no path
     if(parent == null) {
       return;
@@ -363,7 +371,7 @@ public class PathFinder {
         if(openContains(openNode)) {
           Node found = openFind(openNode);
 
-          int gCost = parent.getG() + gCostMovement(parent, found);
+          int gCost = (int) (parent.getG() + gCostMovement(parent, found));
 
           //calculate gCost from this current node to an open list node is
           //less, then we should use this node for our final path
@@ -380,7 +388,7 @@ public class PathFinder {
       }
     }
 
-  }
+  }*/
 
   /*
    * Constructs the final path from start to end node. Only called once a
