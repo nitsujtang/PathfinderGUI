@@ -169,6 +169,7 @@ public class PathFinder {
    * reach the end node. Self corrects the path to the end node using the
    * heuristic cost function h.
    *
+   * TODO fix parent pointers?
    */
   public void aStarPath() {
     //get node with lowest F cost off PQ
@@ -193,11 +194,15 @@ public class PathFinder {
       control.repaint();
       constructPath();
       //System.out.println(finalPath);
-      System.out.println(start.getX() + " " + start.getY());
-      System.out.println(open);
-      System.out.println(closed);
+      //System.out.println(start.getX() + " " + start.getY());
+      //System.out.println(open);
+      //System.out.println(closed);
       //System.out.println(open.size());
       //System.out.println(closed.size());
+      System.out.println("Total Cost of Path: " + end.getParent().getG());
+      System.out.println("Size of Open: " + open.size());
+      System.out.println("Size of Closed: " + closed.size());
+      System.out.println("Size of Path: " + finalPath.size());
       return;
     }
 
@@ -234,7 +239,7 @@ public class PathFinder {
         //checks for border in adjacent pos, does not allow for a diagonal
         //jump across a border
         if(isWall(new Point(wallJumpX, current.getY())) || isWall(new
-              Point(current.getX(), wallJumpY))) {
+              Point(current.getX(), wallJumpY)) && ((j == 0 | j == 2) && i != 1)) {
           continue;
         }
 
@@ -250,11 +255,27 @@ public class PathFinder {
         //if node in open and we found lower gCost, no need to search neighbor
         if(inOpen && (gCost < neighbor.getG())) {
           openRemove(neighbor);
+          Node found = openFind(neighbor);
+
+          neighbor.setG(gCost);
+          neighbor.setF(gCost + found.getH());
+
+          //if(!(found.getParent()).equals(start)) {
+            neighbor.setParent(current);
+          //}
+
+          open.add(neighbor);
         }
 
         //if neighbor in closed and found lower gCost, visit again
         if(inClosed && (gCost < neighbor.getG())) {
           closedRemove(new Point(neighbor.getX(), neighbor.getY()));
+
+          /*neighbor.setG(gCost);
+          neighbor.setH(hCost);
+          neighbor.setF(gCost + hCost);
+          neighbor.setParent(current);*/
+
           open.add(neighbor);
         }
 
@@ -269,7 +290,6 @@ public class PathFinder {
         }
       }
     }
-
 
     //path correction for finding the shortest path
     if(!wall.isEmpty()) {
@@ -295,15 +315,23 @@ public class PathFinder {
    * you can’t take a diagonal, then subtract the steps you save by using the 
    * diagonal. There are min(dx, dy) diagonal steps, and each one costs D2 but 
    * saves you 2⨉D non-diagonal steps."
-   * To break ties in fCost, we slightly weight the hCost so that we expand
-   * vertices closer to the end node.
+   * 
+   * With no walls present, we can use a heuristic cost that factors in the
+   * total weight of a moving one nodeSize distance or a diagonalMove distance.
+   *
+   * With walls present, we use octile distance in order to find the shortest
+   * possible path with path corrections.
    */
   public int hCostMovement(Node neighbor) {
     int hXCost = Math.abs(end.getX() - neighbor.getX());
     int hYCost = Math.abs(end.getY() - neighbor.getY());
     int hCost = (nodeSize * Math.max(hXCost, hYCost)) + ((diagonalMove - nodeSize)
                 * Math.min(hXCost, hYCost));
-    return (int) (hCost *= (1 + (1.0 / 1000)));
+
+    if(wall.isEmpty()) {
+      return hCost;
+    }
+    return (int) ((hXCost + hYCost) + (Math.sqrt(2) - 2) * Math.min(hXCost, hYCost));
   }
 
   /*
@@ -359,7 +387,7 @@ public class PathFinder {
    * valid path is found.
    */
   public void constructPath() {
-    Node current = end;
+    Node current = end.getParent();
     while(!(current.getParent().equals(start))) {
       finalPath.add(0, current);
       current = current.getParent();

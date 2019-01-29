@@ -15,7 +15,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class PathFinderController extends JPanel implements ActionListener,
-                                                 MouseListener, KeyListener {
+                              MouseListener, KeyListener, MouseMotionListener {
   private PathFinder path;
   private JPanel pane;
   private JFrame window;
@@ -33,6 +33,7 @@ public class PathFinderController extends JPanel implements ActionListener,
 
     addMouseListener(this);
     addKeyListener(this);
+    addMouseMotionListener(this);
 
     setFocusable(true);
 
@@ -256,12 +257,12 @@ public class PathFinderController extends JPanel implements ActionListener,
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    timer.setDelay(100);
+    timer.setDelay(50);
 
     //check if is running, then do the pathfinding steps
     //if(isrunning)
     //  call one step of pathfinding
-    if(path.isRun() && !path.isComplete()) {
+    if(path.isRun() && !path.isComplete() && !path.isPause()) {
       path.aStarPath();
       //path.printOpen();
     }
@@ -336,6 +337,16 @@ public class PathFinderController extends JPanel implements ActionListener,
 
   @Override
   public void keyTyped(KeyEvent e) {
+    
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    gridWork(e);
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
     
   }
 
