@@ -7,7 +7,7 @@
 public class Node {
   private int x;
   private int y;
-  private int f, g, h;
+  private double f, g, h;
   private Node parent;
 
   /*
@@ -31,15 +31,15 @@ public class Node {
     return y;
   }
 
-  public int getF() {
+  public double getF() {
     return f;
   }
 
-  public int getG() {
+  public double getG() {
     return g;
   }
 
-  public int getH() {
+  public double getH() {
     return h;
   }
 
@@ -57,15 +57,15 @@ public class Node {
     this.y = y;
   }
 
-  public void setF(int f) {
+  public void setF(double f) {
     this.f = f;
   }
 
-  public void setG(int g) {
+  public void setG(double g) {
     this.g = g;
   }
 
-  public void setH(int h) {
+  public void setH(double h) {
     this.h = h;
   }
 
