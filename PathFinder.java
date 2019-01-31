@@ -33,18 +33,17 @@ public class PathFinder {
   private boolean isPause;
   private boolean run;
   private boolean complete;
+  private boolean deleteWalls;
 
-  private double diagonalMove;
-  private int nodeSize;
   
+  private static final int NODE_SIZE = 25;
+  private static final int DIAGONAL_MOVE = (int) (Math.sqrt(2 * 
+                                                     (Math.pow(NODE_SIZE, 2))));
   public PathFinder(PathFinderController control) {
     this.control = control;
-    nodeSize = 25;
 
     run = false;
     isPause = true;
-
-    diagonalMove = (int) (Math.sqrt(2 * (Math.pow(nodeSize, 2))));
 
     open = new PriorityQueue<Node>(new NodeComparator());
     closed = new HashSet<Point>();
@@ -126,12 +125,20 @@ public class PathFinder {
     return wall.remove(pt);
   }
 
+  public void deleteWalls(boolean d) {
+    deleteWalls = d;
+  }
+
   public void reset() {
     run = false;
     isPause = true;
     complete = false;
 
-    wall.clear();
+    if(deleteWalls) {
+      wall.clear();
+      deleteWalls = false;
+    }
+
     closed.clear();
     open.clear();
     finalPath.clear();
@@ -211,8 +218,8 @@ public class PathFinder {
           continue;
         }
         
-        int xCoord = (current.getX() - nodeSize) + (nodeSize * i);
-        int yCoord = (current.getY() - nodeSize) + (nodeSize * j);
+        int xCoord = (current.getX() - NODE_SIZE) + (NODE_SIZE * i);
+        int yCoord = (current.getY() - NODE_SIZE) + (NODE_SIZE * j);
         Node neighbor = new Node(xCoord, yCoord);
 
         //checks if node is within canvas boundary
@@ -243,16 +250,13 @@ public class PathFinder {
 
         boolean inOpen = openContains(neighbor);
         boolean inClosed = closedContains(new Point(neighbor.getX(),
-              neighbor.getY()));
+                            neighbor.getY()));
         Node found = openFind(neighbor);
-        if(found != null)
-          System.out.println("Found GCost: " + found.getG());
 
         //if inOpen and inClosed cases just in case, should not happen
         //if node in open and we found lower gCost, no need to search neighbor
-        if(inOpen && (found != null) && (gCost < found.getG())) {
-          openRemove(neighbor);
-          //Node found = openFind(neighbor);
+        if(inOpen && (gCost < found.getG())) {
+          openRemove(found);
 
           neighbor.setG(gCost);
           neighbor.setF(gCost + found.getH());
@@ -260,21 +264,11 @@ public class PathFinder {
           neighbor.setParent(current);
 
           open.add(neighbor);
-          System.out.println("HEYOPEN");
           continue;
         }
 
         //if neighbor in closed and found lower gCost, visit again
-        //if(inClosed && (gCost < neighbor.getG())) {
         if(inClosed && (gCost < neighbor.getG())) {
-          //closedRemove(new Point(neighbor.getX(), neighbor.getY()));
-
-          /*neighbor.setG(gCost);
-          neighbor.setH(hCost);
-          neighbor.setF(gCost + hCost);
-          neighbor.setParent(current);*/
-
-          //open.add(neighbor);
           System.out.println("HEYCLOSED");
           continue;
         }
@@ -291,10 +285,6 @@ public class PathFinder {
       }
     }
 
-    //path correction for finding the shortest path
-    if(!wall.isEmpty()) {
-      //pathCorrection(open.peek());
-    }
   }
 
   /*
@@ -307,11 +297,6 @@ public class PathFinder {
     int yCoord = neighbor.getY() - parent.getY();
 
     return (int) (Math.sqrt(Math.pow(xCoord, 2) + Math.pow(yCoord, 2)));
-    /*if(xCoord != 0 && yCoord != 0) {
-      return diagonalMove;
-    }
-
-    return 25.0;*/
   }
 
   /*
@@ -321,74 +306,24 @@ public class PathFinder {
    * diagonal. There are min(dx, dy) diagonal steps, and each one costs D2 but 
    * saves you 2⨉D non-diagonal steps."
    * 
-   * With no walls present, we can use a heuristic cost that factors in the
-   * total weight of a moving one nodeSize distance or a diagonalMove distance.
-   *
-   * With walls present, we use octile distance in order to find the shortest
-   * possible path with path corrections.
+   * The heuristic used is octile distance where the cost of an orthogonal move
+   * is one and the cost of a diagonal is sqrt(2).
    */
   public double hCostMovement(Node neighbor) {
     int hXCost = Math.abs(end.getX() - neighbor.getX());
     int hYCost = Math.abs(end.getY() - neighbor.getY());
-    double hCost = (nodeSize * Math.max(hXCost, hYCost)) + ((diagonalMove - nodeSize)
-                * Math.min(hXCost, hYCost));
+    double hCost = hXCost + hYCost;
 
-    if(hXCost > hYCost) {
-      hCost = ((hXCost - hYCost) + Math.sqrt(2) * hYCost);
-    } else {
-      hCost = ((hYCost - hXCost) + Math.sqrt(2) * hXCost);
+    if(control.isOctile()) {
+      if(hXCost > hYCost) {
+        hCost = ((hXCost - hYCost) + Math.sqrt(2) * hYCost);
+      } else {
+        hCost = ((hYCost - hXCost) + Math.sqrt(2) * hXCost);
+      }
     }
 
     return hCost;
   }
-
-  /*
-   * Method checks nodes on the open list and allows for a possible path
-   * correction so that we achieve the lowest cost. A possible reason for
-   * why we may not achieve the lowest cost without this method is that we
-   * deal with wall objects and our first greedy attempt at finding a path
-   * may not work.
-   */
-  /*public void pathCorrection(Node parent) {
-    //if parent null, then no path
-    if(parent == null) {
-      return;
-    }
-
-    //all possible neighbors to the current node, the parent
-    for(int i = 0; i < 3; i++) {
-      for(int j = 0; j < 3; j++) {
-        if(i == 1 && j == 1) {
-          continue;
-        }
-
-        //find all adjacent x and y positions
-        int xCoord = (parent.getX() - nodeSize) + (nodeSize * i);
-        int yCoord = (parent.getY() - nodeSize) + (nodeSize * j);
-        Node openNode = new Node(xCoord, yCoord);
-
-        //check if an adjacent node in open list
-        if(openContains(openNode)) {
-          Node found = openFind(openNode);
-
-          int gCost = (int) (parent.getG() + gCostMovement(parent, found));
-
-          //calculate gCost from this current node to an open list node is
-          //less, then we should use this node for our final path
-          if(gCost < found.getG()) {
-            open.remove(openNode);
-
-            found.setG(gCost);
-            found.setF(gCost + found.getH());
-            found.setParent(parent);
-
-            open.add(found);
-          }
-        }
-      }
-    }
-
-  }*/
 
   /*
    * Constructs the final path from start to end node. Only called once a

@@ -19,14 +19,19 @@ public class PathFinderController extends JPanel implements ActionListener,
   private PathFinder path;
   private JPanel pane;
   private JFrame window;
-  private int nodeSize;
 
   private Timer timer;
 
   private Node start;
   private Node end;
 
-  char keyPress;
+  private char keyPress;
+  private boolean isOctile;
+  private boolean isManhattan;
+
+  private static final int CANVAS_WIDTH = 1250;
+  private static final int CANVAS_HEIGHT = 700;
+  private static final int NODE_SIZE = 25;
 
   public PathFinderController() {
     setLayout(null);
@@ -41,17 +46,19 @@ public class PathFinderController extends JPanel implements ActionListener,
 
     timer = new Timer(100, this);
 
+    isOctile = true;
+    isManhattan = false;
+
     //set up window
     window = new JFrame();
     window.setContentPane(this);
-    window.setTitle("A* Pathfinding");
-    window.getContentPane().setPreferredSize(new Dimension(700, 600));
+    window.setTitle("Pathfinding");
+    window.getContentPane().setPreferredSize(new Dimension(CANVAS_WIDTH,
+                                              CANVAS_HEIGHT));
     window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     window.pack();
     window.setLocationRelativeTo(null);
     window.setVisible(true);
-
-    nodeSize = 25;
 
     path = new PathFinder(this);
 
@@ -67,6 +74,10 @@ public class PathFinderController extends JPanel implements ActionListener,
     super.paintComponent(g);
   }
 
+  public boolean isOctile() {
+    return isOctile;
+  }
+
   /*
    * All the graphics will be created using this method. Changing certain
    * things about the grid will prompt this method to be called again and
@@ -76,9 +87,9 @@ public class PathFinderController extends JPanel implements ActionListener,
   public void paint(Graphics g) {
     //Draw grid for pathfind
     g.setColor(Color.lightGray);
-    for(int j = 0; j < this.getHeight(); j += nodeSize) {
-      for(int i = 0; i < this.getWidth(); i += nodeSize) {
-        g.drawRect(i, j, nodeSize, nodeSize);
+    for(int j = 0; j < this.getHeight(); j += NODE_SIZE) {
+      for(int i = 0; i < this.getWidth(); i += NODE_SIZE) {
+        g.drawRect(i, j, NODE_SIZE, NODE_SIZE);
       }
     }
 
@@ -89,14 +100,14 @@ public class PathFinderController extends JPanel implements ActionListener,
       int xCoord = (int) pt.getX();
       int yCoord = (int) pt.getY();
 
-      g.fillRect(xCoord + 1, yCoord + 1, nodeSize - 2, nodeSize - 2);
+      g.fillRect(xCoord + 1, yCoord + 1, NODE_SIZE - 2, NODE_SIZE - 2);
     }
 
     //draw open list
     PriorityQueue<Node> openList = path.getOpen();
     g.setColor(new Color(132, 255, 138));
     for(Node e : openList) {
-      g.fillRect(e.getX() + 1, e.getY() + 1, nodeSize - 2, nodeSize - 2);
+      g.fillRect(e.getX() + 1, e.getY() + 1, NODE_SIZE - 2, NODE_SIZE - 2);
     }
 
     //draw closed list
@@ -106,7 +117,7 @@ public class PathFinderController extends JPanel implements ActionListener,
       int xCoord = (int) pt.getX();
       int yCoord = (int) pt.getY();
 
-      g.fillRect(xCoord + 1, yCoord + 1, nodeSize - 2, nodeSize - 2);
+      g.fillRect(xCoord + 1, yCoord + 1, NODE_SIZE - 2, NODE_SIZE - 2);
     }
 
     //draw final path
@@ -114,20 +125,20 @@ public class PathFinderController extends JPanel implements ActionListener,
     g.setColor(new Color(32, 233, 255));
     for(int i = 0; i < finalPath.size(); i++) {
       g.fillRect(finalPath.get(i).getX() + 1, finalPath.get(i).getY() + 1,
-                 nodeSize - 2, nodeSize - 2);
+                 NODE_SIZE - 2, NODE_SIZE - 2);
     }
 
     //draw the start node
     if(start != null) {
       g.setColor(Color.blue);
-      g.fillRect(start.getX() + 1, start.getY() + 1, nodeSize - 2, nodeSize -
+      g.fillRect(start.getX() + 1, start.getY() + 1, NODE_SIZE - 2, NODE_SIZE -
           2);
     }
 
     //draw the end node
     if(end != null) {
       g.setColor(Color.red);
-      g.fillRect(end.getX() + 1, end.getY() + 1, nodeSize - 2, nodeSize - 2);
+      g.fillRect(end.getX() + 1, end.getY() + 1, NODE_SIZE - 2, NODE_SIZE - 2);
     }
   }
 
@@ -141,8 +152,8 @@ public class PathFinderController extends JPanel implements ActionListener,
     if(e.getButton() == MouseEvent.BUTTON1) {
 
       //mouse clicks not exactly at node point of creation, so find remainder
-      int xOver = e.getX() % nodeSize;
-      int yOver = e.getY() % nodeSize;
+      int xOver = e.getX() % NODE_SIZE;
+      int yOver = e.getY() % NODE_SIZE;
 
       //s key and left mouse makes start node
       if(keyPress == 's') {
@@ -232,7 +243,7 @@ public class PathFinderController extends JPanel implements ActionListener,
         }
 
         repaint();
-      
+
       //just mouse click makes walls
       } else {
         //create walls and add to wall list
@@ -272,7 +283,9 @@ public class PathFinderController extends JPanel implements ActionListener,
   @Override
   public void mouseClicked(MouseEvent e) {
     //all mouse clicks to change grid somehow
-    gridWork(e);
+    if(!path.isRun()) {
+      gridWork(e);
+    }
   }
 
   @Override
@@ -327,6 +340,21 @@ public class PathFinderController extends JPanel implements ActionListener,
       //command to clear and reset
       path.reset();
       repaint();
+    } else if(keyPress == 'o') {
+      isOctile = true;
+      isManhattan = false;
+
+      System.out.println("Using OCTILE distance\n");
+    } else if(keyPress == 'm') {
+      isManhattan = true;
+      isOctile = false;
+
+     System.out.println("Using MANHATTAN distance\n");
+    } else if(keyPress == KeyEvent.VK_BACK_SPACE) {
+      path.deleteWalls(true);
+      path.reset();
+
+      System.out.println("deleted all walls");
     }
   }
 
@@ -342,7 +370,9 @@ public class PathFinderController extends JPanel implements ActionListener,
 
   @Override
   public void mouseDragged(MouseEvent e) {
-    gridWork(e);
+    if(!path.isRun()) {
+      gridWork(e);
+    }
   }
 
   @Override
