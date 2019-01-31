@@ -18,3 +18,10 @@ Press 'm' to use the Manhattan distance heuristic.
 Press 'o' to use the Octile distance heuristic.
 
 Press 'backspace' to clear the entire board except the start and end nodes.
+
+## Demo path finding
+
+<img src='Pathfinder_Demo_Real.gif' title='Gif demo of pathfinder' alt='Gif demo
+of pathfinder'>
+
+GIF created with [LiceCap](http://www.cockos.com/licecap/).
