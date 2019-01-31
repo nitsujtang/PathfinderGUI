@@ -4,7 +4,6 @@
  * by Justin Tang
  */
 
-// TODO: add delete function to gridWork, work on A* algorithm
 // TODO: add functionality for other search algorithms too
 
 import java.util.ArrayList;
@@ -341,20 +340,32 @@ public class PathFinderController extends JPanel implements ActionListener,
       path.reset();
       repaint();
     } else if(keyPress == 'o') {
-      isOctile = true;
-      isManhattan = false;
 
-      System.out.println("Using OCTILE distance\n");
+      if(!path.isRun()) {
+        isOctile = true;
+        isManhattan = false;
+
+        System.out.println("Using OCTILE distance\n");
+      }
+
     } else if(keyPress == 'm') {
-      isManhattan = true;
-      isOctile = false;
 
-     System.out.println("Using MANHATTAN distance\n");
+      if(!path.isRun()) {
+        isManhattan = true;
+        isOctile = false;
+
+        System.out.println("Using MANHATTAN distance\n");
+      }
+
     } else if(keyPress == KeyEvent.VK_BACK_SPACE) {
-      path.deleteWalls(true);
-      path.reset();
 
-      System.out.println("deleted all walls");
+      if(!path.isRun()) {
+        path.deleteWalls(true);
+        path.reset();
+
+        System.out.println("deleted all walls\n");
+      }
+
     }
   }
 

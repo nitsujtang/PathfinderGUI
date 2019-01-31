@@ -177,8 +177,6 @@ public class PathFinder {
    * A* pathfinding algorithm. Tries to explore the fewest number of nodes to
    * reach the end node. Self corrects the path to the end node using the
    * heuristic cost function h.
-   *
-   * TODO fix parent pointers?
    */
   public void aStarPath() {
     //get node with lowest F cost off PQ
