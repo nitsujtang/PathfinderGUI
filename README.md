@@ -1,4 +1,4 @@
-#PathFinder GUI README by Justin Tang
+# PathFinder GUI README by Justin Tang
 
 A GUI visualizer for different search algorithms.
 
