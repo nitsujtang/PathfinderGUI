@@ -15,7 +15,7 @@ import javax.swing.*;
 
 public class PathFinderController extends JPanel implements ActionListener,
                               MouseListener, KeyListener, MouseMotionListener {
-  private PathFinder path;
+  private AStarFinder path;
   private JPanel pane;
   private JFrame window;
 
@@ -59,7 +59,7 @@ public class PathFinderController extends JPanel implements ActionListener,
     window.setLocationRelativeTo(null);
     window.setVisible(true);
 
-    path = new PathFinder(this);
+    path = new AStarFinder(this);
 
     //show changes to window
     this.revalidate();
@@ -363,6 +363,20 @@ public class PathFinderController extends JPanel implements ActionListener,
         path.reset();
 
         System.out.println("deleted all walls\n");
+      }
+
+    } else if(keyPress == '3') {
+
+      if(!path.isRun()) {
+        path.setisDijkstra(true);
+        System.out.println("Running Dijkstra\n");
+      }
+
+    } else if(keyPress == '4') {
+
+      if(!path.isRun()) {
+        path.setisDijkstra(false);
+        System.out.println("Running A Star\n");
       }
 
     }

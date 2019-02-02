@@ -8,7 +8,7 @@ FILE = src/ PathFinderController
 .java.class:
 	$(JC) $(JFLAGS) $ src/*.java
 
-CLASSES = src/PathFinder.java \
+CLASSES = src/AStarFinder.java \
           src/PathFinderController.java \
 					src/Node.java \
 					src/NodeComparator.java
