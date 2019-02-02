@@ -328,9 +328,9 @@ public class PathFinder {
    * valid path is found.
    */
   public void constructPath() {
-    Node current = end.getParent();
+    Node current = end;
     while(!(current.getParent().equals(start))) {
-      finalPath.add(0, current);
+      finalPath.add(0, current.getParent());
       current = current.getParent();
     }
 

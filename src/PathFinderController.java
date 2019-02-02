@@ -322,9 +322,8 @@ public class PathFinderController extends JPanel implements ActionListener,
           if(start != null && end != null) {
             path.setStart(start);
             path.setEnd(end);
+            path.setisRun(true);
           }
-
-          path.setisRun(true);
         }
       }
 

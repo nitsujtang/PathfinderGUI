@@ -1,19 +1,19 @@
 JFLAGS = -g
 JC = javac
-JVM = java
-FILE = PathFinderController
+JVM = java -cp
+FILE = src/ PathFinderController
 
 .SUFFIXES: .java .class
 
 .java.class:
-	$(JC) $(JFLAGS) $*.java
+	$(JC) $(JFLAGS) $ src/*.java
 
-CLASSES = PathFinder.java \
-          PathFinderController.java \
-					Node.java \
-					NodeComparator.java
+CLASSES = src/PathFinder.java \
+          src/PathFinderController.java \
+					src/Node.java \
+					src/NodeComparator.java
 
-MAIN = PathFinderController
+MAIN = src/ PathFinderController
 
 run: classes
 	$(JVM) $(MAIN)
