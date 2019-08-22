@@ -71,6 +71,7 @@ public class PathFinderController extends JPanel implements ActionListener,
   @Override
   public void paintComponents(Graphics g) {
     super.paintComponent(g);
+    //System.out.println("WHORES");
   }
 
   public boolean isOctile() {
@@ -85,6 +86,7 @@ public class PathFinderController extends JPanel implements ActionListener,
   @Override
   public void paint(Graphics g) {
     //Draw grid for pathfind
+    super.paint(g);
     g.setColor(Color.lightGray);
     for(int j = 0; j < this.getHeight(); j += NODE_SIZE) {
       for(int i = 0; i < this.getWidth(); i += NODE_SIZE) {
@@ -148,7 +150,9 @@ public class PathFinderController extends JPanel implements ActionListener,
   public void gridWork(MouseEvent e) {
 
     //if mouse click was left click
-    if(e.getButton() == MouseEvent.BUTTON1) {
+    int wallDragEvent = e.paramString().indexOf("MOUSE_DRAGGED");
+    String txtEvent = e.getMouseModifiersText(e.getModifiersEx());
+    if(e.getButton() == MouseEvent.BUTTON1 || wallDragEvent != -1) {
 
       //mouse clicks not exactly at node point of creation, so find remainder
       int xOver = e.getX() % NODE_SIZE;
@@ -176,9 +180,9 @@ public class PathFinderController extends JPanel implements ActionListener,
         //otherwise, do not move start to where end is
         } else {
           
-
           if(!path.isWall(new Point(xTmp, yTmp))) {
             if(end == null) {
+              this.repaint();
               start.setXY(xTmp, yTmp);
             } else {
               if(!end.equals(new Node(xTmp, yTmp))) {
@@ -189,7 +193,7 @@ public class PathFinderController extends JPanel implements ActionListener,
 
         }
 
-        repaint();
+        this.repaint();
 
       //e key and left mouse makes end node
       } else if(keyPress == 'e') {
@@ -394,9 +398,7 @@ public class PathFinderController extends JPanel implements ActionListener,
 
   @Override
   public void mouseDragged(MouseEvent e) {
-    if(!path.isRun()) {
-      gridWork(e);
-    }
+    this.gridWork(e);
   }
 
   @Override
